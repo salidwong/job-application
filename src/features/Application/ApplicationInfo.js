@@ -9,7 +9,6 @@ import {
   Select,
   makeStyles,
   Radio,
-  FormLabel,
   RadioGroup,
   FormControlLabel,
   Button,
@@ -21,6 +20,31 @@ import {
 } from "@material-ui/pickers";
 import { useState } from "react";
 import NumberFormat from "react-number-format";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  selectFirstName,
+  selectTitle,
+  setTitle,
+  setFirstName,
+  selectLastName,
+  setLastName,
+  selectDateOfBirth,
+  setDateOfBirth,
+  selectNationality,
+  setNationality,
+  selectCitizenID,
+  setCitizenID,
+  selectGender,
+  setGender,
+  selectCountryCode,
+  setCountryCode,
+  selectPhoneNo,
+  setPhoneNo,
+  selectPassportNo,
+  setPassportNo,
+  selectSalary,
+  setSalary,
+} from "./applicationInfoSlice";
 
 const useStyles = makeStyles(() => {
   return {
@@ -68,83 +92,91 @@ const countryCodes = [
 
 export const ApplicationInfo = () => {
   const classes = useStyles();
-  const [title, setTitle] = useState("empty");
-  const [nationality, setNationality] = useState("empty");
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [selectedDate, handleDateChange] = useState(new Date());
-  const [citizenID, setCitizenID] = useState("");
-  const [gender, setGender] = useState("male");
-  const [countryCode, setCountryCode] = useState("th");
-  const [passportNo, setPassportNo] = useState("");
-  const [salary, setSalary] = useState("");
+
+  const dispatch = useDispatch();
+
+  const title = useSelector(selectTitle);
+  const firstName = useSelector(selectFirstName);
+  const lastName = useSelector(selectLastName);
+  const dateOfBirth = useSelector(selectDateOfBirth);
+  const nationality = useSelector(selectNationality);
+  const citizenID = useSelector(selectCitizenID);
+  const gender = useSelector(selectGender);
+  const countryCode = useSelector(selectCountryCode);
+  const phoneNo = useSelector(selectPhoneNo);
+  const passportNo = useSelector(selectPassportNo);
+  const salary = useSelector(selectSalary);
 
   const handleTitleChange = (e) => {
     const { target } = e;
     const { value } = target;
 
-    console.log("value", value);
-
-    setTitle(value);
-  };
-
-  const handleNationalityChange = (e) => {
-    const { target } = e;
-    const { value } = target;
-
-    console.log("value", value);
-
-    setNationality(value);
+    dispatch(setTitle({ value }));
   };
 
   const handleFirstNameChange = (e) => {
     const { target } = e;
     const { value } = target;
 
-    setFirstName(value);
+    dispatch(setFirstName({ value }));
   };
 
   const handleLastNameChange = (e) => {
     const { target } = e;
     const { value } = target;
 
-    setLastName(value);
+    dispatch(setLastName({ value }));
+  };
+
+  const handleDateOfBirthChange = (value) => {
+    dispatch(setDateOfBirth({ value }));
+  };
+
+  const handleNationalityChange = (e) => {
+    const { target } = e;
+    const { value } = target;
+
+    dispatch(setNationality({ value }));
   };
 
   const handleCitizenIdChange = (values) => {
     const { value } = values;
 
-    setCitizenID(value);
+    dispatch(setCitizenID({ value }));
   };
 
   const handleGenderChange = (e) => {
     const { target } = e;
     const { value } = target;
 
-    setGender(value);
+    dispatch(setGender({ value }));
   };
 
   const handleCountryCodeChange = (e) => {
     const { target } = e;
     const { value } = target;
 
-    setCountryCode(value);
+    dispatch(setCountryCode({ value }));
+  };
+
+  const handlePhoneNoChange = (values) => {
+    const { value } = values;
+
+    dispatch(setPhoneNo({ value }));
   };
 
   const handlePassportNoChange = (e) => {
     const { target } = e;
     const { value } = target;
 
-    setPassportNo(value);
+    dispatch(setPassportNo({ value }));
   };
 
   const handleSalaryChange = (values) => {
     const { value } = values;
 
-    setSalary(value);
+    dispatch(setSalary({ value }));
   };
-
-  console.log("selectedDate", selectedDate);
 
   return (
     <Paper variant="outlined" className={classes.paper}>
@@ -225,11 +257,10 @@ export const ApplicationInfo = () => {
                 <MuiPickersUtilsProvider utils={DateFnsUtils}>
                   <KeyboardDatePicker
                     className={classes.textField}
-                    disableToolbar
                     variant="inline"
                     format="MM/dd/yyyy"
-                    value={selectedDate}
-                    onChange={handleDateChange}
+                    value={dateOfBirth}
+                    onChange={handleDateOfBirthChange}
                     KeyboardButtonProps={{
                       "aria-label": "change date",
                     }}
@@ -346,9 +377,9 @@ export const ApplicationInfo = () => {
                   <NumberFormat
                     className={classes.textField}
                     customInput={TextField}
-                    value={""}
+                    value={phoneNo}
                     format="#-####-####"
-                    onValueChange={() => null}
+                    onValueChange={handlePhoneNoChange}
                   />
                 </Grid>
               </Grid>
