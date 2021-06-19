@@ -1,9 +1,10 @@
-import React from 'react';
-import logo from './logo.svg';
-import { Counter } from './features/counter/Counter';
-import './App.css';
+import React from "react";
+import logo from "./logo.svg";
+import { Counter } from "./features/counter/Counter";
+import "./App.css";
+import { Application } from "./features/Application";
 
-function App() {
+const Default = () => {
   return (
     <div className="App">
       <header className="App-header">
@@ -53,6 +54,10 @@ function App() {
       </header>
     </div>
   );
+};
+
+function App() {
+  return <Application />;
 }
 
 export default App;
