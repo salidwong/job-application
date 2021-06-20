@@ -17,6 +17,7 @@ import {
   FormControlLabel,
   Select,
   MenuItem,
+  Box,
 } from "@material-ui/core";
 import NumberFormat from "react-number-format";
 
@@ -280,8 +281,6 @@ export const ApplicationFormTable = () => {
       (n) => n.value === f.nationality
     );
 
-    console.log("countryCodeLabel", countryCodeLabel);
-
     return {
       firstName: { key: f.firstName, value: f.firstName },
       lastName: { key: f.lastName, value: f.lastName },
@@ -329,12 +328,19 @@ export const ApplicationFormTable = () => {
             </TableRow>
           </TableHead>
 
-          <TableBody>
-            {formTable.map((x, i) => (
-              <Row key={`row-table-${i}`} x={x} i={i} header={header} />
-            ))}
-          </TableBody>
+          {formTable.length !== 0 && (
+            <TableBody>
+              {formTable.map((x, i) => (
+                <Row key={`row-table-${i}`} x={x} i={i} header={header} />
+              ))}
+            </TableBody>
+          )}
         </Table>
+        {formTable.length === 0 && (
+          <Box display={"flex"} justifyContent="center" m={4}>
+            <Typography align="center">NOT FOUND</Typography>
+          </Box>
+        )}
       </TableContainer>
     </Paper>
   );

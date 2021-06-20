@@ -14,10 +14,7 @@ import {
   Button,
 } from "@material-ui/core";
 import DateFnsUtils from "@date-io/date-fns";
-import {
-  MuiPickersUtilsProvider,
-  KeyboardDatePicker,
-} from "@material-ui/pickers";
+import { MuiPickersUtilsProvider, DatePicker } from "@material-ui/pickers";
 import NumberFormat from "react-number-format";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -46,7 +43,7 @@ import {
   selectApplicationInfo,
   submitApplication,
 } from "./applicationInfoSlice";
-import { useEffect } from "react";
+import { format } from "date-fns";
 
 const useStyles = makeStyles(() => {
   return {
@@ -67,6 +64,7 @@ const useStyles = makeStyles(() => {
     textField: {
       paddingLeft: "10px",
     },
+    warningMessage: { paddingLeft: "10px", fontSize: "12px" },
   };
 });
 
@@ -100,6 +98,32 @@ export const countryCodes = [
   { id: "id-00010", value: "etc", label: "+00" },
 ];
 
+const validateThaiCitizenID = (id) => {
+  if (id === "") return true;
+  if (id == null || id.length !== 13 || !/^[0-9]\d+$/.test(id)) {
+    return false;
+  }
+  let i;
+  let sum = 0;
+  for (i = 0, sum = 0; i < 12; i++) {
+    sum += parseInt(id.charAt(i)) * (13 - i);
+  }
+  const check = (11 - (sum % 11)) % 10;
+  if (check === parseInt(id.charAt(12))) {
+    return true;
+  }
+  return false;
+};
+
+const validateField = (info) => {
+  const { title, firstName, lastName, phoneNo, salary } = info;
+  console.log("info", info);
+
+  return (
+    title !== "empty" && !!firstName && !!lastName && !!phoneNo && !!salary
+  );
+};
+
 export const ApplicationInfo = () => {
   const classes = useStyles();
   const dispatch = useDispatch();
@@ -108,7 +132,8 @@ export const ApplicationInfo = () => {
   const title = useSelector(selectTitle);
   const firstName = useSelector(selectFirstName);
   const lastName = useSelector(selectLastName);
-  const dateOfBirth = useSelector(selectDateOfBirth);
+  const formatDateOfBirth = useSelector(selectDateOfBirth);
+  const dateOfBirth = new Date(formatDateOfBirth);
   const nationality = useSelector(selectNationality);
   const citizenID = useSelector(selectCitizenID);
   const gender = useSelector(selectGender);
@@ -127,19 +152,23 @@ export const ApplicationInfo = () => {
   const handleFirstNameChange = (e) => {
     const { target } = e;
     const { value } = target;
-
+    const pattern = /^[\u0E00-\u0E7Fa-zA-Z]*$/;
+    if (!pattern.test(value)) return;
     dispatch(setFirstName({ value }));
   };
 
   const handleLastNameChange = (e) => {
     const { target } = e;
     const { value } = target;
+    const pattern = /^[\u0E00-\u0E7Fa-zA-Z]*$/;
+    if (!pattern.test(value)) return;
 
     dispatch(setLastName({ value }));
   };
 
   const handleDateOfBirthChange = (value) => {
-    dispatch(setDateOfBirth({ value }));
+    const formatDate = format(value, "yyyy/MM/dd");
+    dispatch(setDateOfBirth({ value: formatDate }));
   };
 
   const handleNationalityChange = (e) => {
@@ -189,7 +218,10 @@ export const ApplicationInfo = () => {
   };
 
   const handleSubmit = () => {
-    dispatch(submitApplication({ applicationInfo }));
+    const isValid = validateField(applicationInfo);
+    if (!isValid) return;
+
+    dispatch(submitApplication(applicationInfo));
   };
 
   return (
@@ -206,7 +238,11 @@ export const ApplicationInfo = () => {
                 <Typography color="error">*</Typography>
               </Grid>
               <Grid item>
-                <FormControl className={classes.formControl} fullWidth>
+                <FormControl
+                  error={title === "empty"}
+                  className={classes.formControl}
+                  fullWidth
+                >
                   <Select value={title} onChange={handleTitleChange}>
                     {titles.map((t) => (
                       <MenuItem key={t.id} value={t.value}>
@@ -215,6 +251,15 @@ export const ApplicationInfo = () => {
                     ))}
                   </Select>
                 </FormControl>
+                {title === "empty" && (
+                  <Typography
+                    color="error"
+                    variant="body1"
+                    className={classes.warningMessage}
+                  >
+                    field is required
+                  </Typography>
+                )}
               </Grid>
             </Grid>
           </Grid>
@@ -229,10 +274,12 @@ export const ApplicationInfo = () => {
               </Grid>
               <Grid item md={8}>
                 <TextField
+                  error={!firstName}
                   className={classes.textField}
                   fullWidth
                   value={firstName}
                   onChange={handleFirstNameChange}
+                  helperText={!firstName && "field is required"}
                 />
               </Grid>
             </Grid>
@@ -248,10 +295,12 @@ export const ApplicationInfo = () => {
               </Grid>
               <Grid item md={8}>
                 <TextField
+                  error={!lastName}
                   className={classes.textField}
                   fullWidth
                   value={lastName}
                   onChange={handleLastNameChange}
+                  helperText={!lastName && "field is required"}
                 />
               </Grid>
             </Grid>
@@ -271,15 +320,14 @@ export const ApplicationInfo = () => {
 
               <Grid item>
                 <MuiPickersUtilsProvider utils={DateFnsUtils}>
-                  <KeyboardDatePicker
+                  <DatePicker
                     className={classes.textField}
-                    variant="inline"
-                    format="MM/dd/yyyy"
+                    disableFuture
+                    openTo="year"
+                    format="dd/MM/yyyy"
+                    views={["year", "month", "date"]}
                     value={dateOfBirth}
                     onChange={handleDateOfBirthChange}
-                    KeyboardButtonProps={{
-                      "aria-label": "change date",
-                    }}
                   />
                 </MuiPickersUtilsProvider>
               </Grid>
@@ -317,12 +365,22 @@ export const ApplicationInfo = () => {
 
               <Grid item>
                 <NumberFormat
+                  error={!validateThaiCitizenID(citizenID)}
                   className={classes.textField}
                   customInput={TextField}
                   value={citizenID}
                   format="#-####-#####-##-#"
                   onValueChange={handleCitizenIdChange}
                 />
+                {!validateThaiCitizenID(citizenID) && (
+                  <Typography
+                    variant="body1"
+                    color="error"
+                    className={classes.warningMessage}
+                  >
+                    Invalid CitizenID
+                  </Typography>
+                )}
               </Grid>
             </Grid>
           </Grid>
@@ -394,12 +452,22 @@ export const ApplicationInfo = () => {
 
                 <Grid item md={7}>
                   <NumberFormat
+                    error={!phoneNo}
                     className={classes.textField}
                     customInput={TextField}
                     value={phoneNo}
                     format="#-####-####"
                     onValueChange={handlePhoneNoChange}
                   />
+                  {!phoneNo && (
+                    <Typography
+                      color="error"
+                      variant="body1"
+                      className={classes.warningMessage}
+                    >
+                      field is required
+                    </Typography>
+                  )}
                 </Grid>
               </Grid>
             </Grid>
@@ -413,6 +481,7 @@ export const ApplicationInfo = () => {
 
               <Grid item>
                 <TextField
+                  className={classes.textField}
                   value={passportNo}
                   onChange={handlePassportNoChange}
                 />
@@ -434,13 +503,22 @@ export const ApplicationInfo = () => {
 
               <Grid item>
                 <NumberFormat
+                  error={!salary}
                   className={classes.textField}
                   customInput={TextField}
                   thousandSeparator
                   value={salary}
-                  //   format="#-####-#####-##-#"
                   onValueChange={handleSalaryChange}
                 />
+                {!salary && (
+                  <Typography
+                    color="error"
+                    variant="body1"
+                    className={classes.warningMessage}
+                  >
+                    field is required
+                  </Typography>
+                )}
               </Grid>
             </Grid>
           </Grid>

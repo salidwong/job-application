@@ -1,11 +1,12 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { selectForms, setApplicationForms } from "./applicationFormSlice";
+import { format } from "date-fns";
 
 const initialState = {
   title: "empty",
   firstName: "",
   lastName: "",
-  dateOfBirth: new Date(),
+  dateOfBirth: format(new Date(), "yyyy/MM/dd"),
   nationality: "empty",
   citizenID: "",
   gender: "male",
@@ -124,19 +125,15 @@ export const selectSalary = (state) => state.applicationInfo.salary;
 
 export const submitApplication = (applicationInfo) => (dispatch, getState) => {
   const forms = selectForms(getState());
-  const applicationInfo = selectApplicationInfo(getState());
 
-  console.log("applicationInfo", applicationInfo);
-  console.log("appForms", forms);
   if (!forms.length) {
-    console.log("in submit if");
     dispatch(setApplicationForms({ applicationForms: [applicationInfo] }));
   } else {
-    console.log("in submit else");
     dispatch(
       setApplicationForms({ applicationForms: [...forms, applicationInfo] })
     );
   }
+
   dispatch(clearApplicationInfo());
 };
 
