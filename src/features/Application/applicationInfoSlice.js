@@ -1,4 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
+import { selectForms, setApplicationForms } from "./applicationFormSlice";
 
 const initialState = {
   title: "empty",
@@ -12,6 +13,7 @@ const initialState = {
   phoneNo: "",
   passportNo: "",
   salary: "",
+  isChecked: false,
 };
 
 export const applicationInfoSlice = createSlice({
@@ -85,6 +87,7 @@ export const applicationInfoSlice = createSlice({
 
       state.salary = value;
     },
+    clearApplicationInfo: () => initialState,
   },
 });
 
@@ -100,11 +103,13 @@ export const {
   setPhoneNo,
   setPassportNo,
   setSalary,
+  clearApplicationInfo,
 } = applicationInfoSlice.actions;
 
 // The function below is called a selector and allows us to select a value from
 // the state. Selectors can also be defined inline where they're used instead of
 // in the slice file. For example: `useSelector((state: RootState) => state.counter.value)`
+export const selectApplicationInfo = (state) => state.applicationInfo;
 export const selectTitle = (state) => state.applicationInfo.title;
 export const selectFirstName = (state) => state.applicationInfo.firstName;
 export const selectLastName = (state) => state.applicationInfo.lastName;
@@ -116,5 +121,23 @@ export const selectCountryCode = (state) => state.applicationInfo.countryCode;
 export const selectPhoneNo = (state) => state.applicationInfo.phoneNo;
 export const selectPassportNo = (state) => state.applicationInfo.passportNo;
 export const selectSalary = (state) => state.applicationInfo.salary;
+
+export const submitApplication = (applicationInfo) => (dispatch, getState) => {
+  const forms = selectForms(getState());
+  const applicationInfo = selectApplicationInfo(getState());
+
+  console.log("applicationInfo", applicationInfo);
+  console.log("appForms", forms);
+  if (!forms.length) {
+    console.log("in submit if");
+    dispatch(setApplicationForms({ applicationForms: [applicationInfo] }));
+  } else {
+    console.log("in submit else");
+    dispatch(
+      setApplicationForms({ applicationForms: [...forms, applicationInfo] })
+    );
+  }
+  dispatch(clearApplicationInfo());
+};
 
 export default applicationInfoSlice.reducer;

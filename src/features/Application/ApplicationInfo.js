@@ -18,7 +18,6 @@ import {
   MuiPickersUtilsProvider,
   KeyboardDatePicker,
 } from "@material-ui/pickers";
-import { useState } from "react";
 import NumberFormat from "react-number-format";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -44,7 +43,10 @@ import {
   setPassportNo,
   selectSalary,
   setSalary,
+  selectApplicationInfo,
+  submitApplication,
 } from "./applicationInfoSlice";
+import { useEffect } from "react";
 
 const useStyles = makeStyles(() => {
   return {
@@ -69,32 +71,40 @@ const useStyles = makeStyles(() => {
 });
 
 const pleaseSelect = {
+  id: "id-00001",
   value: "empty",
   label: "please select",
 };
 
 const titles = [
   { ...pleaseSelect },
-  { value: "mr", label: "Mr." },
-  { value: "mrs", label: "Mrs." },
+  { id: "id-00002", value: "mr", label: "Mr." },
+  { id: "id-00003", value: "mrs", label: "Mrs." },
 ];
 
-const nationalities = [
+export const nationalities = [
   { ...pleaseSelect },
-  { value: "th", label: "Thai" },
-  { value: "en", label: "English" },
+  { id: "id-00004", value: "th", label: "Thai" },
+  { id: "id-00005", value: "en", label: "English" },
 ];
 
-const countryCodes = [
-  { value: "th", label: "+66" },
-  { value: "etc", label: "+00" },
+export const genders = [
+  { ...pleaseSelect },
+  { id: "id-00006", value: "male", label: "Male" },
+  { id: "id-00007", value: "female", label: "Female" },
+  { id: "id-00008", value: "unisex", label: "UniSex" },
+];
+
+export const countryCodes = [
+  { id: "id-00009", value: "th", label: "+66" },
+  { id: "id-00010", value: "etc", label: "+00" },
 ];
 
 export const ApplicationInfo = () => {
   const classes = useStyles();
-
   const dispatch = useDispatch();
 
+  const applicationInfo = useSelector(selectApplicationInfo);
   const title = useSelector(selectTitle);
   const firstName = useSelector(selectFirstName);
   const lastName = useSelector(selectLastName);
@@ -178,6 +188,10 @@ export const ApplicationInfo = () => {
     dispatch(setSalary({ value }));
   };
 
+  const handleSubmit = () => {
+    dispatch(submitApplication({ applicationInfo }));
+  };
+
   return (
     <Paper variant="outlined" className={classes.paper}>
       <Container>
@@ -195,7 +209,9 @@ export const ApplicationInfo = () => {
                 <FormControl className={classes.formControl} fullWidth>
                   <Select value={title} onChange={handleTitleChange}>
                     {titles.map((t) => (
-                      <MenuItem value={t.value}>{t.label}</MenuItem>
+                      <MenuItem key={t.id} value={t.value}>
+                        {t.label}
+                      </MenuItem>
                     ))}
                   </Select>
                 </FormControl>
@@ -283,7 +299,9 @@ export const ApplicationInfo = () => {
                     onChange={handleNationalityChange}
                   >
                     {nationalities.map((t) => (
-                      <MenuItem value={t.value}>{t.label}</MenuItem>
+                      <MenuItem key={t.id} value={t.value}>
+                        {t.label}
+                      </MenuItem>
                     ))}
                   </Select>
                 </FormControl>
@@ -358,7 +376,6 @@ export const ApplicationInfo = () => {
               <Grid item>
                 <Typography color="error">*</Typography>
               </Grid>
-
               <Grid container md={8}>
                 <Grid item>
                   <FormControl style={{ paddingLeft: "10px" }}>
@@ -367,7 +384,9 @@ export const ApplicationInfo = () => {
                       onChange={handleCountryCodeChange}
                     >
                       {countryCodes.map((t) => (
-                        <MenuItem value={t.value}>{t.label}</MenuItem>
+                        <MenuItem key={t.id} value={t.value}>
+                          {t.label}
+                        </MenuItem>
                       ))}
                     </Select>
                   </FormControl>
@@ -427,7 +446,7 @@ export const ApplicationInfo = () => {
           </Grid>
 
           <Grid item>
-            <Button variant="contained" color="primary" onClick={() => null}>
+            <Button variant="contained" color="primary" onClick={handleSubmit}>
               SUBMIT
             </Button>
           </Grid>
